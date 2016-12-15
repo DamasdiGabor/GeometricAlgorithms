@@ -23,7 +23,8 @@ void randomPoints()
     points[i] = new PVector(random(width), random(height));
   }
 }
-
+  
+  
 //Function to draw the points. 
 void drawPoints()
 {
