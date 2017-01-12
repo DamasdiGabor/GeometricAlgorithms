@@ -1,4 +1,4 @@
-int numberOfPoints=60;
+int numberOfPoints=180;
 PVector[] points=new PVector[numberOfPoints];   //stores the points as vectors
 float[][] slopes;                               //stores the slopes of all possible lines as a number between -pi/2 and pi/2 
 
@@ -76,7 +76,12 @@ void draw()
     drawPoints();
     //test();
     //  test2();
+    while (!solved)
+    {
     step();
+    }
+    background(255);
+    drawPoints();
     drawLines();
 
     //if the problem is solved we stop
