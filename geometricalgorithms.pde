@@ -1,4 +1,4 @@
-int numberOfPoints=18;
+int numberOfPoints=60;
 PVector[] points=new PVector[numberOfPoints];   //stores the points as vectors
 float[][] slopes;                               //stores the slopes of all possible lines as a number between -pi/2 and pi/2 
 
@@ -60,9 +60,9 @@ void init()
   line3=new mline(points[l3a], points[l3b]);
   dir3=1;
 
-  move(2);
-  move(3);
-  move(3);
+  //move(2);
+  //move(3);
+  //move(3);
   //We start by moving the third line.
   nextToMove=3;
 }
@@ -77,8 +77,8 @@ void draw()
     //test();
     //  test2();
     step();
-   drawLines();
-   
+    drawLines();
+
     //if the problem is solved we stop
     if (solved)
     {
@@ -145,26 +145,28 @@ void step()
       counterrrr++;
       text("rrr", points[i].x+10, points[i].y);
     }
-    //based on the numberes check if we are ready. If we are not then we decide wich line to move next time.
+  }
+  //based on the numberes check if we are ready. If we are not then we decide wich line to move next time.
 
-    int persix=(numberOfPoints-6)/6;
-    if (counterlrl==0 && counterrlr==0 &&                                                            //the inner one is empty (also the nonexistent one)
-      counterrrr==persix && counterlll==persix && counterlrr==persix && counterrrl==persix && counterllr==persix && counterrll==persix )           //other areas have 1/6 of the points.   
+  int persix=(numberOfPoints-6)/6;
+  if (counterlrl==0 && counterrlr==0 &&                                                            //we are ready if the inner one is empty (also the nonexistent one)
+    counterrrr==persix && counterlll==persix && counterlrr==persix && counterrrl==persix && counterllr==persix && counterrll==persix )           //and the other areas have 1/6 of the points.   
+  {
+    solved=true;
+    print("solved"+counterllr+" "+counterrrr+" "+counterlrr+" "+counterrll+" "+counterrrl+" "+counterlll+" "+persix+"\n");
+  } 
+  else   //If we are not ready, we choose the next line to be moved.
+  {
+    print(counterllr+" "+counterrrr+" "+persix+" "+nextToMove+"\n");
+    if (counterllr<persix)
     {
-      solved=true;
-    } else
-    {
-      print(counterllr+" "+counterrrr+" "+persix+" "+nextToMove+"\n");
-      if (counterllr<persix)
+      nextToMove=3;
+    } else {
+      if (counterlrr<persix)
       {
-        nextToMove=3;
+        nextToMove=2;
       } else {
-        if (counterlrr<persix)
-        {
-          nextToMove=2;
-        } else {
-          nextToMove=1;
-        }
+        nextToMove=1;
       }
     }
   }
