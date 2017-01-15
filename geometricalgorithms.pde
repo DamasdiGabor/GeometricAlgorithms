@@ -1,4 +1,4 @@
-int numberOfPoints=600;
+int numberOfPoints=120;
 PVector[] points=new PVector[numberOfPoints];   //stores the points as vectors
 float[][] slopes;                               //stores the slopes of all possible lines as a number between -pi/2 and pi/2 
 
