@@ -1,4 +1,4 @@
-int numberOfPoints=180;
+int numberOfPoints=600;
 PVector[] points=new PVector[numberOfPoints];   //stores the points as vectors
 float[][] slopes;                               //stores the slopes of all possible lines as a number between -pi/2 and pi/2 
 
@@ -15,10 +15,20 @@ boolean solved=false;                          //Is the problem solved by the th
 boolean pause=false;                            //for testing
 
 
+int counterlll=0;                              //The number of points contained in the 8 possible area,
+int counterllr=0;
+int counterlrl=0;
+int counterlrr=0;
+int counterrll=0;
+int counterrlr=0;
+int counterrrl=0;
+int counterrrr=0;
+
+
 //Initialization
 void setup()
 {
-  frameRate(20);
+  frameRate(60);
   size(600, 600);
   randomPoints();        //Generate points
   init();                //Initilaization of the algorithm
@@ -40,15 +50,19 @@ void init()
     mline lines1=new mline(points[l1a], points[l1b]);
     int counter=0;
     for (int i = 0; i < points.length; i++) {
-      if (whichSide(lines1, points[i])==-1 ) {
+      if (whichSide(lines1, points[i])==-1 && i!=l1b) {
+        counter++;
+      }
+      if (i==l1a)
+      {
         counter++;
       }
     }
-    if (counter==numberOfPoints/2-1) {
+    if (counter==numberOfPoints/2) {
       found=true;
     }
   }
-  //We set the three lines to the same position but then we move the second and third one so they wont start from the same place.
+  //We set the three lines to the same position.
   line1=new mline(points[l1a], points[l1b]);
   dir1=1;
   l2a=l1a;
@@ -60,9 +74,6 @@ void init()
   line3=new mline(points[l3a], points[l3b]);
   dir3=1;
 
-  //move(2);
-  //move(3);
-  //move(3);
   //We start by moving the third line.
   nextToMove=3;
 }
@@ -105,58 +116,101 @@ void step()
   }
 
   //We calculate the number of points in each area. There are 8 possible area, we can define them by wich side of the lines are we on.
-  int counterlll=0;
-  int counterllr=0;
-  int counterlrl=0;
-  int counterlrr=0;
-  int counterrll=0;
-  int counterrlr=0;
-  int counterrrl=0;
-  int counterrrr=0;
+  counterlll=0;
+  counterllr=0;
+  counterlrl=0;
+  counterlrr=0;
+  counterrll=0;
+  counterrlr=0;
+  counterrrl=0;
+  counterrrr=0;
+
   for (int i = 0; i < points.length; i++) {
-    if (whichSide(line1, points[i])==-1 && whichSide(line2, points[i])==-1 &&  whichSide(line3, points[i])==-1) {
-      counterlll++;
-      text("lll", points[i].x+10, points[i].y);
-    } 
-    if (whichSide(line1, points[i])==-1 && whichSide(line2, points[i])==-1 &&  whichSide(line3, points[i])==1) {
-      counterllr++;
-      text("llr", points[i].x+10, points[i].y);
-    } 
-    if (whichSide(line1, points[i])==-1 && whichSide(line2, points[i])==1 &&  whichSide(line3, points[i])==-1) {
-      counterlrl++;
-      text("lrl", points[i].x+10, points[i].y);
-    } 
-    if (whichSide(line1, points[i])==-1 && whichSide(line2, points[i])==1 &&  whichSide(line3, points[i])==1) {
-      counterlrr++;
-      text("lrr", points[i].x+10, points[i].y);
-    } 
-    if (whichSide(line1, points[i])==1 && whichSide(line2, points[i])==-1 &&  whichSide(line3, points[i])==-1) {
-      counterrll++;
-      text("rll", points[i].x+10, points[i].y);
-    } 
-    if (whichSide(line1, points[i])==1 && whichSide(line2, points[i])==-1 &&  whichSide(line3, points[i])==1) {
-      counterrlr++;
-      text("rlr", points[i].x+10, points[i].y);
-    } 
-    if (whichSide(line1, points[i])==1 && whichSide(line2, points[i])==1 &&  whichSide(line3, points[i])==-1) {
-      counterrrl++;
-      text("rrl", points[i].x+10, points[i].y);
-    } 
-    if (whichSide(line1, points[i])==1 && whichSide(line2, points[i])==1 &&  whichSide(line3, points[i])==1) {
-      counterrrr++;
-      text("rrr", points[i].x+10, points[i].y);
+    int side1=whichSide(line1, points[i]);
+    int side2=whichSide(line2, points[i]);
+    int side3=whichSide(line3, points[i]);
+    if (i==l1a) {
+      side1=-1;
     }
+    if (i==l2a) {
+      side2=-1;
+    }
+    if (i==l3a) {
+      side3=-1;
+    }
+    //A bit hard to decide where to put l1b, l2b, l3b. We calculate the next position of the lines, and check what happened to this three point. We decide the side based on that.
+
+    if (i==l1b) {
+      int help=nextCenter(l1a, slopes[l1a][l1b]);
+      int tempdir1=1;
+      mline templine1;
+      if (whichSide(line1, points[help])==-1)
+      {
+        tempdir1=-1;
+      } else {
+        tempdir1=1;
+      }
+      int templ1b=l1a;
+      int templ1a=help;
+      if (tempdir1==1) {
+        templine1=new mline(points[templ1a], points[templ1b]);
+      } else {
+        templine1=new mline(points[templ1b], points[templ1a]);
+      }
+
+      side1=whichSide(templine1, points[l1b]);
+    }
+    if (i==l2b) {
+      int help=nextCenter(l2a, slopes[l2a][l2b]);
+      int tempdir2=1;
+      mline templine2;
+      if (whichSide(line2, points[help])==-1)
+      {
+        tempdir2=-1;
+      } else {
+        tempdir2=1;
+      }
+      int templ2b=l1a;
+      int templ2a=help;
+      if (tempdir2==1) {
+        templine2=new mline(points[templ2a], points[templ2b]);
+      } else {
+        templine2=new mline(points[templ2b], points[templ2a]);
+      }
+
+      side2=whichSide(templine2, points[l2b]);
+    }
+    if (i==l3b) {
+      int help=nextCenter(l3a, slopes[l3a][l3b]);
+      int tempdir3=1;
+      mline templine3;
+      if (whichSide(line3, points[help])==-1)
+      {
+        tempdir3=-1;
+      } else {
+        tempdir3=1;
+      }
+      int templ3b=l3a;
+      int templ3a=help;
+      if (tempdir3==1) {
+        templine3=new mline(points[templ3a], points[templ3b]);
+      } else {
+        templine3=new mline(points[templ3b], points[templ3a]);
+      }
+
+      side3=whichSide(templine3, points[l3b]);
+    }
+    updateCounters(side1, side2, side3, i);
   }
   //based on the numberes check if we are ready. If we are not then we decide wich line to move next time.
 
-  int persix=(numberOfPoints-6)/6;
+  int persix=(numberOfPoints)/6;
   if (counterlrl==0 && counterrlr==0 &&                                                            //we are ready if the inner one is empty (also the nonexistent one)
     counterrrr==persix && counterlll==persix && counterlrr==persix && counterrrl==persix && counterllr==persix && counterrll==persix )           //and the other areas have 1/6 of the points.   
   {
     solved=true;
     print("solved"+counterllr+" "+counterrrr+" "+counterlrr+" "+counterrll+" "+counterrrl+" "+counterlll+" "+persix+"\n");
-  } 
-  else   //If we are not ready, we choose the next line to be moved.
+  } else   //If we are not ready, we choose the next line to be moved.
   {
     print(counterllr+" "+counterrrr+" "+persix+" "+nextToMove+"\n");
     if (counterllr<persix)
@@ -170,6 +224,43 @@ void step()
         nextToMove=1;
       }
     }
+  }
+}
+
+
+void updateCounters(int side1, int side2, int side3, int i)
+{
+  if (side1==-1 && side2==-1 &&  side3==-1) {
+    counterlll++;
+    text("lll", points[i].x+10, points[i].y);
+  } 
+  if (side1==-1 && side2==-1 &&  side3==1) {
+    counterllr++;
+    text("llr", points[i].x+10, points[i].y);
+  } 
+  if (side1==-1 && side2==1 &&  side3==-1) {
+    counterlrl++;
+    text("lrl", points[i].x+10, points[i].y);
+  } 
+  if (side1==-1 && side2==1 &&  side3==1) {
+    counterlrr++;
+    text("lrr", points[i].x+10, points[i].y);
+  } 
+  if (side1==1 && side2==-1 &&  side3==-1) {
+    counterrll++;
+    text("rll", points[i].x+10, points[i].y);
+  } 
+  if (side1==1 && side2==-1 &&  side3==1) {
+    counterrlr++;
+    text("rlr", points[i].x+10, points[i].y);
+  } 
+  if (side1==1 && side2==1 &&  side3==-1) {
+    counterrrl++;
+    text("rrl", points[i].x+10, points[i].y);
+  } 
+  if (side1==1 && side2==1 &&  side3==1) {
+    counterrrr++;
+    text("rrr", points[i].x+10, points[i].y);
   }
 }
 
