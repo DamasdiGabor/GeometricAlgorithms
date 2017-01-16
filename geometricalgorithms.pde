@@ -1,21 +1,20 @@
-int numberOfPoints=12;
-PVector[] points=new PVector[numberOfPoints];   //stores the points as vectors
+int numberOfPoints=60;                           //The number of points to be generated
+PVector[] points=new PVector[numberOfPoints];    //We store the points as vectors
 float[][] slopes;                               //stores the slopes of all possible lines as a number between -pi/2 and pi/2 
 
-mline line1=new mline();                        //the three lines, and the defining indices. 
+mline line1=new mline();                        //the three lines, and the defining indices. linex goes trough points[lxa] and points[lxb] 
 int l1a, l1b, dir1;                              //We also need the direction of the lines. If dirx=1 then the direction of linex is from points[lxa] to points[lxb]
 mline line2=new mline();
 int l2a, l2b, dir2;
 mline line3=new mline();
 int l3a, l3b, dir3;
 
-int nextToMove;                                //Which line will make the next step
 boolean solved=false;                          //Is the problem solved by the three line.
 
-boolean pause=false;                            //for testing
-int numberOfSteps=0;
+boolean pause=false;                            //for testing, if you press 'p' while the program is running it will pause
+int numberOfSteps=0;                            //The number of setps we make with the lines.
 
-int counterlll=0;                              //The number of points contained in the 8 possible area,
+int counterlll=0;                              //The number of points contained in the 8 possible area, one of the areas is always nonexistent.
 int counterllr=0;
 int counterlrl=0;
 int counterlrr=0;
@@ -24,8 +23,10 @@ int counterrlr=0;
 int counterrrl=0;
 int counterrrr=0;
 
-boolean phase1=true;
-int initialSide;                                //on which side of l1 is the intersection of l2 and l3
+boolean phase1=true;                            //True if we are in the first phase of the algorithm
+int initialSide;                                //Stores on which side of line1 is the intersection of line2 and line3
+
+int numgif=0;                                   //Number of frames saved for gif creation.
 
 //Initialization
 void setup()
@@ -36,7 +37,7 @@ void setup()
   init();                //Initilaization of the algorithm
 }
 
-//Initalization of the algorithm. We calculate the slopes of every line that goes trhough two of the points. Then we look for a halfing line.
+//Initalization of the algorithm. We calculate the slopes of every line that goes trhough two of the points. Then we look for a halving line.
 void init()
 {
   slopes=new float[numberOfPoints][numberOfPoints];        
@@ -45,7 +46,7 @@ void init()
   l1b=0;
   boolean found=false;
 
-  //we search for a line that goes trough the first point and an other one and halfs the points. 
+  //We search for a halvingline that goes trough the first point and an other one  
   while (!found)
   {
     l1b++;
@@ -64,6 +65,7 @@ void init()
       found=true;
     }
   }
+
   //We set the three lines to the same position.
   line1=new mline(points[l1a], points[l1b]);
   dir1=1;
@@ -71,7 +73,11 @@ void init()
   l2b=l1b;
   line2=new mline(points[l2a], points[l2b]);
   dir2=1;
-
+  l3a=l1a;
+  l3b=l1b;
+  line3=new mline(points[l3a], points[l3b]);
+  dir3=1;
+  //We initialize our counters.
   counterlll=numberOfPoints/2;
   counterllr=0;
   counterlrl=0;
@@ -80,15 +86,6 @@ void init()
   counterrlr=0;
   counterrrl=0;
   counterrrr=numberOfPoints/2;
-
-
-
-  l3a=l1a;
-  l3b=l1b;
-  line3=new mline(points[l3a], points[l3b]);
-  dir3=1;
-
-  //We start by moving the third line.
 }
 
 
@@ -98,20 +95,26 @@ void draw()
   if (!pause) {
     if (!solved)
     {
-   
-     
-     background(255);
-    drawPoints();
-    //test();
-    //  test2();
-    step();
-    drawPoints();
+      background(255);
+      drawPoints();
+      //uncomenting these lines we block the animation
+      //while(!solved)
+      //{
+      step();
+      //}
 
-    drawLines();
-    drawlabels();  
-    //if the problem is solved we stop
-  }else{   noLoop();
-      print("solvedit");
+      drawPoints();
+      drawLines();
+
+      //uncomenting these lines will save all the frames, for gif creation.
+      /*if (numgif<100) { 
+       saveFrame("image-####.gif"); 
+       numgif++;
+       }*/
+
+      //if the problem is solved we stop
+    } else {   
+      noLoop();
     }
   }
 }
@@ -119,8 +122,8 @@ void draw()
 void step()
 {
   numberOfSteps++;
-  print(numberOfSteps+" t");
-  //if we are in the first phase we move the second and the third forward until we have enough points int llr, and lrr+lrl+rlr
+
+  //if we are in the first phase we move the second and the third forward until we have enough points in llr+rlr, and lrr+lrl
   if (phase1)
   {
     if (counterllr+counterrlr<numberOfPoints/6)
@@ -141,10 +144,8 @@ void step()
       }
     }
   } else { 
-
-
-    //We move approporiate line to its next position.
-    //we move line1 and check if we are ready
+    //Phase2
+    //We move approporiate line(s) to the next position. We always maintain enough points in llr+rlr, and lrr+lrl
     if (canWeMove(true, false, false))
     {
       move(1);
@@ -184,44 +185,10 @@ void step()
         }
       }
     }
-
-    if (counterlrr+counterlrl!=numberOfPoints/6 || counterllr+counterrlr!=numberOfPoints/6)
-    {
-      print("wrong");
-      pause=true;
-    }
-
-
-
-    //based on the numberes check if we are ready. If we are not then we decide wich line to move next time.
-
-    int persix=(numberOfPoints)/6;
-    if (counterlrl==0 && counterrlr==0 &&                                                            //we are ready if the inner one is empty (also the nonexistent one)
-      counterrrr==persix && counterlll==persix && counterlrr==persix && counterrrl==persix && counterllr==persix && counterrll==persix )           //and the other areas have 1/6 of the points.   
-    {
-      //solved=true;
-      print("solved"+counterllr+" "+counterrrr+" "+counterlrr+" "+counterrll+" "+counterrrl+" "+counterlll+" "+persix+"\n");
-    } else   //If we are not ready, we choose the next line to be moved.
-    {
-      print(counterllr+" "+counterrrr+" "+counterlrr+" "+counterrll+" "+counterrrl+" "+counterlll+"x "+counterrlr+" "+counterlrl+"\n");
-    }
   }
 }
 
-void drawlabels()
-{
-  for (int i = 0; i < points.length; i++) {
-    //int side1=whichSide(line1, points[i]);
-    //int side2=whichSide(line2, points[i]);
-    //int side3=whichSide(line3, points[i]);
-    int side1=whichSide2(line1, 1, i);
-    int side2=whichSide2(line2, 2, i);
-    int side3=whichSide2(line3, 3, i);
-
-    writeCounters(side1, side2, side3, i);
-  }
-}
-
+//Checks if the intersection of line2 and line3 moved to the other side of line1. If it did, we are ready. 
 void checkReady(int lineInd)
 {
   if (!solved) {
@@ -237,31 +204,29 @@ void checkReady(int lineInd)
       if (lineInd==1)
       {
         line1=new mline(points[l1b], p);
-        print("1");
       }
 
       if (lineInd==2)
       {
         PVector p2=lineIntersection(line1, line3);
         line2=new mline(points[l2b], p2);
-        print("2");
       }
 
       if (lineInd==3)
       {
         PVector p2=lineIntersection(line1, line2);    
         line3=new mline(points[l3b], p2);
-        print("3");
       }
     }
   }
 }
 
+//Cheks if the number of points would change if we would make a step with our lines.
 boolean canWeMove(boolean first, boolean second, boolean third)
 {
-  
-  print("canwe");
-  int tempcounterlll=counterlll;                              //The number of points contained in the 8 possible area,
+
+  //We save the current state of the algorithm
+  int tempcounterlll=counterlll;                              
   int tempcounterllr=counterllr;
   int tempcounterlrl=counterlrl;
   int tempcounterlrr=counterlrr;
@@ -279,6 +244,7 @@ boolean canWeMove(boolean first, boolean second, boolean third)
   int templ3b=l3b;
   int tempdir3=dir3;
   boolean ans=true;
+  //We move the lines.
   if (first)
   {
     move(1);
@@ -291,7 +257,7 @@ boolean canWeMove(boolean first, boolean second, boolean third)
   {
     move(3);
   }
-
+  //If something changed, we will answer false.
   if (tempcounterlrr+tempcounterlrl!=counterlrr+counterlrl || counterllr+counterrlr!=tempcounterllr+tempcounterrlr)
   {
     ans=false;
@@ -300,7 +266,7 @@ boolean canWeMove(boolean first, boolean second, boolean third)
     ans=true;
   }
   //set everything back to original
-  counterlll=tempcounterlll;                              //The number of points contained in the 8 possible area,
+  counterlll=tempcounterlll;      
   counterllr=tempcounterllr;
   counterlrl=tempcounterlrl;
   counterlrr=tempcounterlrr;
@@ -335,51 +301,12 @@ boolean canWeMove(boolean first, boolean second, boolean third)
   return ans;
 }
 
-
-
-
-void writeCounters(int side1, int side2, int side3, int i)
-{
-  if (side1==-1 && side2==-1 &&  side3==-1) {
-    //counterlll++;
-    text("lll", points[i].x+10, points[i].y);
-  } 
-  if (side1==-1 && side2==-1 &&  side3==1) {
-    // counterllr++;
-    text("llr", points[i].x+10, points[i].y);
-  } 
-  if (side1==-1 && side2==1 &&  side3==-1) {
-    // counterlrl++;
-    text("lrl", points[i].x+10, points[i].y);
-  } 
-  if (side1==-1 && side2==1 &&  side3==1) {
-    // counterlrr++;
-    text("lrr", points[i].x+10, points[i].y);
-  } 
-  if (side1==1 && side2==-1 &&  side3==-1) {
-    // counterrll++;
-    text("rll", points[i].x+10, points[i].y);
-  } 
-  if (side1==1 && side2==-1 &&  side3==1) {
-    //  counterrlr++;
-    text("rlr", points[i].x+10, points[i].y);
-  } 
-  if (side1==1 && side2==1 &&  side3==-1) {
-    //counterrrl++;
-    text("rrl", points[i].x+10, points[i].y);
-  } 
-  if (side1==1 && side2==1 &&  side3==1) {
-    //  counterrrr++;
-    text("rrr", points[i].x+10, points[i].y);
-  }
-}
-
+//Updates the number of points in the areas
 void changeCounters(int ind, int amount)
 {
   int side1=whichSide2(line1, 1, ind);
   int side2=whichSide2(line2, 2, ind);
   int side3=whichSide2(line3, 3, ind);
-
   if (side1==-1 && side2==-1 &&  side3==-1) {
     counterlll=counterlll+amount;
   } 
@@ -407,11 +334,9 @@ void changeCounters(int ind, int amount)
 }
 
 
-//This function moves a line
-void
-  move(int whatToMove)
+//This function moves a given line to the next position
+void move(int whatToMove)
 {
-  print("moveing"+whatToMove);
   if (!solved) {
     if (whatToMove==1)
     {
@@ -444,7 +369,6 @@ void
 
       int help=nextCenter(l2a, slopes[l2a][l2b]); // the next center. This might also go to an other area so we take this one out too.
       changeCounters(help, -1); 
-
 
       if (whichSide(line2, points[help])==-1)
       {
@@ -504,10 +428,6 @@ void drawPoints()
 {
   strokeWeight(10);
   for (int i = 0; i < points.length; i++) {
-    if (i==l1a || i==l2a || i==l3a)
-    {
-      stroke(100, 100, 100);
-    }
     fill(0);
     //text(i, points[i].x+10, points[i].y);
     point(points[i].x, points[i].y);
@@ -584,7 +504,7 @@ class mline
 
   void display()
   {
-    strokeWeight(1);
+    strokeWeight(3);
     PVector dif=PVector.sub(a, b);
     dif.setMag(3000);
     line((float)(a.x+dif.x), (float) (a.y+dif.y), (float)(a.x-dif.x), (float)(a.y-dif.y));
@@ -605,7 +525,7 @@ int whichSide(mline l, PVector p)
   return 1;
 }
 
-//Decides if the point is left or right of the line. The direction of the line is from "a to b" where a and b are the defining points. -1 left 0 incidence 1 right
+//Decides if the point is left or right of the line. This version makes a decision even if the point is on the line. -1 left 1 right
 int whichSide2(mline l, int lineind, int ind)
 {
   PVector p=points[ind];
@@ -655,18 +575,20 @@ PVector lineIntersection(mline e, mline f)
 
   return ans;
 }
+
 //Function that draws the three lines on the screen
 void drawLines()
 {
   stroke(255, 0, 0);
   line1.display(); 
-  stroke(0, 255, 0);
+  stroke(0, 100, 0);
   line2.display(); 
   stroke(0, 0, 255);
   line3.display(); 
   stroke(0);
 }
 
+//If 'p' is pressed the program pauses.
 void keyPressed() {
   if (key=='p')
   {
