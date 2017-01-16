@@ -114,6 +114,7 @@ void draw()
 
       //if the problem is solved we stop
     } else {   
+      print("\nNumber of steps: "+numberOfSteps+"\n");
       noLoop();
     }
   }
