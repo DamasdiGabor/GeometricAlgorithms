@@ -1,4 +1,4 @@
-int numberOfPoints=60;                           //The number of points to be generated
+int numberOfPoints=600;                           //The number of points to be generated
 PVector[] points=new PVector[numberOfPoints];    //We store the points as vectors
 float[][] slopes;                               //stores the slopes of all possible lines as a number between -pi/2 and pi/2 
 
@@ -33,20 +33,50 @@ void setup()
 {
   frameRate(60);
   size(600, 600);
-  randomPoints();        //Generate points
-  init();                //Initilaization of the algorithm
+  int num2=100;
+  for (int j=1; j<num2; j++)
+  {
+    numberOfPoints=0+24*j;
+    int num=100;
+    int sum=0;
+    for (int i=0; i<num; i++)
+    {
+      init();
+      sum=sum+numberOfSteps;
+    }                //Initilaization of the algorithm
+    print(numberOfPoints+"; "+sum/num+"\n");
+  }
 }
 
 //Initalization of the algorithm. We calculate the slopes of every line that goes trhough two of the points. Then we look for a halving line.
 void init()
 {
+   points=new PVector[numberOfPoints];    //We store the points as vectors
+  randomPoints();        //Generate points
   slopes=new float[numberOfPoints][numberOfPoints];        
   setSlopes();      //Calculate slopes
   l1a=0;
   l1b=0;
-  boolean found=false;
+
+
+  solved=false;                          //Is the problem solved by the three line.
+  pause=false;                            //for testing, if you press 'p' while the program is running it will pause
+  numberOfSteps=0;                            //The number of setps we make with the lines.
+
+  counterlll=0;                              //The number of points contained in the 8 possible area, one of the areas is always nonexistent.
+  counterllr=0;
+  counterlrl=0;
+  counterlrr=0;
+  counterrll=0;
+  counterrlr=0;
+  counterrrl=0; 
+  counterrrr=0;
+
+  phase1=true;                            //True if we are in the first phase of the algorithm
+
 
   //We search for a halvingline that goes trough the first point and an other one  
+  boolean found=false;
   while (!found)
   {
     l1b++;
@@ -86,6 +116,12 @@ void init()
   counterrlr=0;
   counterrrl=0;
   counterrrr=numberOfPoints/2;
+  while (!solved)
+  {
+    step();
+  }
+  //print("\nNumber of steps: "+numberOfSteps+"\n");
+  noLoop();
 }
 
 
@@ -96,13 +132,15 @@ void draw()
     if (!solved)
     {
       background(255);
+      translate(height/2, width/2);
       drawPoints();
       //uncomenting these lines we block the animation
-      //while(!solved)
-      //{
-      step();
-      //}
-
+      /*
+      while(!solved)
+       {
+       step();
+       }
+       */
       drawPoints();
       drawLines();
 
@@ -197,7 +235,7 @@ void checkReady(int lineInd)
     int currentSide=whichSide(line1, p);
     if (initialSide!=currentSide) {
       solved=true;
-      print("We are done");
+     // print("We are done");
     } 
     if (solved)
     {
@@ -421,7 +459,11 @@ void randomPoints()
 {
   for (int i = 0; i < points.length; i++) {
     points[i] = new PVector(random(width), random(height));
-  }
+    /*float angle=random(2*PI);
+    float rad=random(200);
+    points[i] = new PVector(rad*cos(angle), rad*sin(angle));
+ */
+ }
 }
 
 //Function to draw the points. 
